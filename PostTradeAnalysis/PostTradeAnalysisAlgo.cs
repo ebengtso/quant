@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using AlgoLucy.Universe;
-using AlgoLucy.Universe.Configuration;
+using AlgorithmUtils.Utilities;
+using AlgorithmUtils.Utilities.Configuration;
 using Newtonsoft.Json.Linq;
 using QuantConnect;
 using QuantConnect.Algorithm;
 using QuantConnect.Data.Market;
 
-namespace AlgoLucy
+namespace PostTradeAnalysis
 {
     public class TradeSummaryLocal
     {
@@ -52,16 +52,16 @@ namespace AlgoLucy
             SetCash(1);
 
 
-            foreach (var symbol in AlgoConfiguration.forexsymbols)
+            foreach (var symbol in Configuration.forexsymbols)
             {
                 AddSecurity(SecurityType.Forex, symbol, Resolution.Hour, Market.Oanda, false, 1, false);
             }
 
-            foreach (var symbol in AlgoConfiguration.cfdsymbols)
+            foreach (var symbol in Configuration.cfdsymbols)
             {
                 AddSecurity(SecurityType.Cfd, symbol, Resolution.Hour, Market.Oanda,false,1,false);
             }
-            trades = loadCsvFile("AlgoLucy-1555768468385-trades.csv").ToArray();
+            trades = loadCsvFile(GetParameter("csvfile")).ToArray();
         }
         public override void OnEndOfAlgorithm()
         {
@@ -70,7 +70,7 @@ namespace AlgoLucy
             foreach (var rule in trades)
             {
                 rule.Serie = rule._Serie.ToArray();
-                Utils.WriteToFile("AlgoLucy-1555768468385-2",string.Format("json-{0}-trade.json", rule.ID), JObject.FromObject(rule).ToString(), false);
+                Utils.WriteToFile(GetParameter("directory"),string.Format("json-{0}-trade.json", rule.ID), JObject.FromObject(rule).ToString(), false);
 
             }
         }
