@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.572
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OandaDataProvider", "OandaDataProvider.csproj", "{F9EDFD64-F524-4AC2-B53E-85BD64D59876}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F9EDFD64-F524-4AC2-B53E-85BD64D59876}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F9EDFD64-F524-4AC2-B53E-85BD64D59876}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F9EDFD64-F524-4AC2-B53E-85BD64D59876}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F9EDFD64-F524-4AC2-B53E-85BD64D59876}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8A8B88BC-47B6-41F0-B973-4747ED25F596}
+	EndGlobalSection
+EndGlobal
