@@ -17,7 +17,7 @@ namespace AlgorithmUtils
         public static string emailAccount ="";
         public static string emailPassword ="";
         public static string SlackURL = "";
-        public static readonly string ID = "";
+        public static string ID = "";
         public static string emailHost = "smtp.gmail.com";
         public static int emailPort = 587;
         //end configure the utilities HERE
