@@ -1,10 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
-using Newtonsoft.Json.Linq;
-using QuantConnect;
-using QuantConnect.Brokerages.Oanda;
 using QuantConnect.Logging;
 using QuantConnect.Util;
 using RestSharp;
