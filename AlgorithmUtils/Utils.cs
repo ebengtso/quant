@@ -8,7 +8,7 @@ using Newtonsoft.Json.Linq;
 using QuantConnect.Algorithm;
 using RestSharp;
 
-namespace AlgoLucy.Universe
+namespace AlgorithmUtils.Utilities
 {
     public class Utils
     {
