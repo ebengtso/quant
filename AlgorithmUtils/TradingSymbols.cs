@@ -1,4 +1,4 @@
-﻿namespace AlgorithmUtils.Utilities
+﻿namespace AlgorithmUtils
 {
     public class TradingSymbols
     {

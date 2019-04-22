@@ -8,18 +8,24 @@ using Newtonsoft.Json.Linq;
 using QuantConnect.Algorithm;
 using RestSharp;
 
-namespace AlgorithmUtils.Utilities
+namespace AlgorithmUtils
 {
     public class Utils
     {
+
+        //start configure the utilities HERE
         public static string emailAccount ="";
         public static string emailPassword ="";
         public static string SlackURL = "";
+        public static readonly string ID = "";
+        public static string emailHost = "smtp.gmail.com";
+        public static int emailPort = 587;
+        //end configure the utilities HERE
 
         public static readonly long Identifier = (long)DateTime.Now.ToUniversalTime().Subtract(
     new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)
     ).TotalMilliseconds;
-        public static readonly string ID = "AlgoLucy";
+
 
         public static int ToUnixTimestamp(DateTime dateTime)
         {
@@ -78,8 +84,8 @@ namespace AlgorithmUtils.Utilities
                 SendSlack(AlgorithmId, title, body);
                 // Command line argument must the the SMTP host.
                 SmtpClient client = new SmtpClient();
-                client.Port = 587;
-                client.Host = "smtp.gmail.com";
+                client.Port = Utils.emailPort;
+                client.Host = Utils.emailHost;
                 client.EnableSsl = true;
                 client.Timeout = 10000;
                 client.DeliveryMethod = SmtpDeliveryMethod.Network;
@@ -122,8 +128,8 @@ namespace AlgorithmUtils.Utilities
 
                 // Command line argument must the the SMTP host.
                 SmtpClient client = new SmtpClient();
-                client.Port = 587;
-                client.Host = "smtp.gmail.com";
+                client.Port = Utils.emailPort;
+                client.Host = Utils.emailHost;
                 client.EnableSsl = true;
                 client.Timeout = 10000;
                 client.DeliveryMethod = SmtpDeliveryMethod.Network;

@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using AlgorithmUtils.Utilities;
-using AlgorithmUtils.Utilities.Configuration;
+using AlgorithmUtils;
 using Newtonsoft.Json.Linq;
 using QuantConnect;
 using QuantConnect.Algorithm;

@@ -1,15 +1,16 @@
 ﻿using System.Collections.Generic;
 
-namespace AlgorithmUtils.Utilities.Configuration
+namespace AlgorithmUtils
 {
 
     public static class Configuration
     {
-
-
+        //start set the symbols to trade 
         public static string[] forexsymbols = TradingSymbols.OandaFXMajors2;
-        public static string[] cfdsymbols = TradingSymbols.OandaCFDSelection; //OandaCFDSelection;
-        //liquidity provided by oanda
+        public static string[] cfdsymbols = TradingSymbols.OandaCFDSelection;
+        //end set the symbols to trade
+
+        //liquidity provided by oanda, this is an snapshot, oanda provides with the API quote the liquidity
         public static Dictionary<string, int> maximumOrderSize = new Dictionary<string, int>()
                                                             {
                                                                 {"NATGASUSD",100000},
