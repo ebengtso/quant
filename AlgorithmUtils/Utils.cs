@@ -16,7 +16,8 @@ namespace AlgorithmUtils
         //start configure the utilities HERE
         public static string emailAccount ="";
         public static string emailPassword ="";
-        public static string SlackURL = "";
+        public static string SlackURL = ""; //default-channel
+        public static string SlackURL2 = ""; //alternate channel
         public static string ID = "";
         public static string emailHost = "smtp.gmail.com";
         public static int emailPort = 587;
@@ -25,6 +26,7 @@ namespace AlgorithmUtils
         public static readonly long Identifier = (long)DateTime.Now.ToUniversalTime().Subtract(
     new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)
     ).TotalMilliseconds;
+
 
 
         public static int ToUnixTimestamp(DateTime dateTime)
@@ -73,15 +75,16 @@ namespace AlgorithmUtils
             tw.Flush();
             tw.Close();
         }
-        public static void SendMail(QCAlgorithm algorithm, string AlgorithmId, string title, string body, string url, string id)
+        public static void SendNotification(QCAlgorithm algorithm, string AlgorithmId, string title, string body, string url, string id, bool force = false, bool alternateChannel = false )
         {
-            if (!algorithm.LiveMode)
+            if (!algorithm.LiveMode && !force)
             {
                 return;
             }
             try
             {
-                SendSlack(AlgorithmId, title, body);
+                SendSlack(AlgorithmId, title, body, alternateChannel);
+                SendSlackImage(AlgorithmId, title, url, alternateChannel);
                 // Command line argument must the the SMTP host.
                 SmtpClient client = new SmtpClient();
                 client.Port = Utils.emailPort;
@@ -111,12 +114,12 @@ namespace AlgorithmUtils
                     client.Send(mm);
                     ms.Close();
                 }
-                catch (Exception) { client.Send(mm); }
+                catch (Exception) { }
                  
             }
             catch (Exception) { }
         }
-        public static void SendMail(QCAlgorithm algorithm, string AlgorithmId, string title, string body, bool force = false)
+        public static void SendNotification(QCAlgorithm algorithm, string AlgorithmId, string title, string body, bool force = false, bool alternateChannel = false)
         {
             if (!algorithm.LiveMode && !force)
             {
@@ -124,7 +127,7 @@ namespace AlgorithmUtils
             }
             try
             {
-                SendSlack(AlgorithmId, title, body);
+                SendSlack(AlgorithmId, title, body, alternateChannel);
 
                 // Command line argument must the the SMTP host.
                 SmtpClient client = new SmtpClient();
@@ -146,16 +149,39 @@ namespace AlgorithmUtils
         }
 
 
-        public static void SendSlack(string AlgorithmId, string title, string body)
+        public static void SendSlack(string AlgorithmId, string title, string body, bool alternateChannel = false)
         {
 
             RestClient client = new RestClient
             {
                 Timeout = 120000,
-                BaseUrl = new Uri(string.Format(SlackURL))
+                BaseUrl = new Uri(string.Format(alternateChannel?SlackURL2: SlackURL))
             };
             JObject obj = new JObject();
-            obj.Add("text", string.Format("{0}-{1} {2} {3}", AlgorithmId, Identifier, title, body));
+            obj.Add("text", string.Format("{0}-{1} {2} \n {3}", AlgorithmId, Identifier, title, body));
+
+
+            var request = new RestRequest
+            {
+                Method = RestSharp.Method.POST
+            };
+            request.AddParameter("application/json", obj.ToString(), ParameterType.RequestBody);
+            request.AddHeader("content-type", "application/json");
+            client.Execute(request);
+        }
+
+        public static void SendSlackImage(string AlgorithmId, string title, string url, bool alternateChannel = false)
+        {
+
+            RestClient client = new RestClient
+            {
+                Timeout = 120000,
+                BaseUrl = new Uri(string.Format(alternateChannel ? SlackURL2 : SlackURL))
+            };
+            JObject obj = new JObject();
+            obj.Add("type", "image");
+            obj.Add("alt_text", title);
+            obj.Add("image_url", url);
 
 
             var request = new RestRequest

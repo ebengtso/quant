@@ -6,6 +6,7 @@ using AlgorithmUtils;
 using Newtonsoft.Json.Linq;
 using QuantConnect;
 using QuantConnect.Algorithm;
+using QuantConnect.Data.Custom;
 using QuantConnect.Data.Market;
 
 namespace PostTradeAnalysis
@@ -27,8 +28,10 @@ namespace PostTradeAnalysis
         public decimal support2Price { get; set; }
         public decimal resistancePrice { get; set; }
         public decimal resistance2Price { get; set; }
-        public LocalQuote[] Serie { get; set;  }
-        public List<LocalQuote> _Serie { get; } = new List<LocalQuote>();
+       // public LocalQuote[] Serie { get { return _Serie.ToArray(); } }
+        public List<LocalQuote> Serie { get; } = new List<LocalQuote>();
+       // public CalendarEvent[] Events { get { return _Events.ToArray(); } }
+        public List<CalendarEvent> Events { get; } = new List<CalendarEvent>();
     }
     public class LocalQuote
     {
@@ -40,8 +43,20 @@ namespace PostTradeAnalysis
         public long volume;
     }
 
+    public class CalendarEvent
+    {
+        public decimal price;
+        public string forecast;
+        public string actual;
+        public long date;
+        public string title;
+        public string currency;
+        public string meaning;
+    }
+
     public class PostTradeAnalysisAlgo : QCAlgorithm
     {
+        private static string csvFileName = "trades.csv";
         public TradeSummaryLocal[] trades;
         public override void Initialize()
         {
@@ -50,6 +65,7 @@ namespace PostTradeAnalysis
             SetEndDate(2018, 6, 1);
             SetCash(1);
 
+            AddData<DailyFx>("DFX", Resolution.Minute, TimeZones.Utc);
 
             foreach (var symbol in Configuration.forexsymbols)
             {
@@ -60,7 +76,7 @@ namespace PostTradeAnalysis
             {
                 AddSecurity(SecurityType.Cfd, symbol, Resolution.Hour, Market.Oanda,false,1,false);
             }
-            trades = loadCsvFile(GetParameter("csvfile")).ToArray();
+            trades = loadCsvFile(GetParameter("directory"), csvFileName).ToArray();
         }
         public override void OnEndOfAlgorithm()
         {
@@ -68,15 +84,15 @@ namespace PostTradeAnalysis
 
             foreach (var rule in trades)
             {
-                rule.Serie = rule._Serie.ToArray();
                 Utils.WriteToFile(GetParameter("directory"),string.Format("json-{0}-trade.json", rule.ID), JObject.FromObject(rule).ToString(), false);
 
             }
         }
 
-        public List<TradeSummaryLocal> loadCsvFile(string filePath)
+        public List<TradeSummaryLocal> loadCsvFile(string directory, string fileName)
         {
-            var reader = new StreamReader(File.OpenRead(filePath));
+            Log(string.Format("Loading trades from directory {0}/{1}", directory, fileName));
+            var reader = new StreamReader(File.OpenRead(string.Format("{0}/{1}", directory, fileName)));
             List<TradeSummaryLocal> list = new List<TradeSummaryLocal>();
             reader.ReadLine(); ;
             while (!reader.EndOfStream)
@@ -110,7 +126,37 @@ namespace PostTradeAnalysis
             return list;
         }
 
-        public void OnData(QuoteBars data)
+    public void OnData(DailyFx calendar)
+    {
+        if (calendar.Importance != FxDailyImportance.High) return;
+
+
+            long l = (30 * 24 * 60 * 60);
+            long le = (10 * 24 * 60 * 60);
+            foreach (var rule in trades)
+            {
+                var currency = Securities[rule.Symbol].QuoteCurrency.Symbol;
+                if (calendar.Currency.ToUpper().Equals(currency))
+                {
+  
+                    if (rule.setupTime - l < Utils.ToUnixTimestamp(calendar.EventDateTime) && (rule.exitTime + le > Utils.ToUnixTimestamp(calendar.EventDateTime) || rule.expirationTime + le > Utils.ToUnixTimestamp(calendar.EventDateTime)))
+                    {
+                        rule.Events.Add(new CalendarEvent
+                        {
+                            date = Utils.ToUnixTimestamp(calendar.EventDateTime),
+                            forecast = calendar.Forecast,
+                            actual = calendar.Actual,
+                            title = calendar.Title,
+                            currency = currency,
+                            price = Securities[rule.Symbol].Price,
+                            meaning = calendar.Meaning.ToString()
+                        });
+                    }
+                }
+            }
+        }
+
+    public void OnData(QuoteBars data)
         {
             long l = (30 * 24 * 60 * 60);
             long le = (10 * 24 * 60 * 60);
@@ -121,10 +167,9 @@ namespace PostTradeAnalysis
                     var candleStartTime =Utils.ToUnixTimestamp(data[rule.Symbol].Time.ConvertToUtc(Securities[rule.Symbol].Exchange.TimeZone));
                     var candleEndTime = Utils.ToUnixTimestamp(data[rule.Symbol].EndTime.ConvertToUtc(Securities[rule.Symbol].Exchange.TimeZone));
 
-                    if ((rule._Serie.Count==0 && (rule.setupTime-l) > candleStartTime ) || (rule._Serie.Count > 0 && (rule.exitTime+ le > candleStartTime || rule.expirationTime+ le > candleStartTime)))
+                    if ((rule.Serie.Count==0 && (rule.setupTime-l) > candleStartTime ) || (rule.Serie.Count > 0 && (rule.exitTime+ le > candleStartTime || rule.expirationTime+ le > candleStartTime)))
                     {
-                        List<LocalQuote> serie = new List<LocalQuote>();
-                        rule._Serie.Add(new LocalQuote
+                        rule.Serie.Add(new LocalQuote
                         {
                             date = Utils.ToUnixTimestamp(data[rule.Symbol].Time.ConvertToUtc(Securities[rule.Symbol].Exchange.TimeZone)),
                             open = data[rule.Symbol].Open,
