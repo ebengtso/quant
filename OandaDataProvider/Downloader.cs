@@ -111,9 +111,14 @@ namespace QuantConnect.Lean.Engine.DataFeeds
             filename = string.Format("{0}.csv", symbol.ID.Symbol);
             DateTime _d = new DateTime(2004, 1, 1).ToUniversalTime();
             string csv = "";
-            while (_d < DateTime.UtcNow)
+            var now = DateTime.UtcNow;
+            while (_d < now)
             {
                 DateTime _end = _d.AddHours(5000);
+                if(_end> now)
+                {
+                    _end = now;
+                }
                 url = string.Format(_url, s, _price, ToUnixTimestamp(_d), ToUnixTimestamp(_end), r);
 
 
@@ -136,6 +141,10 @@ namespace QuantConnect.Lean.Engine.DataFeeds
                         csv += curcsv;
                     }
 
+                }
+                else
+                {
+                    Log.Trace(string.Format("Error {0}", response.ErrorException));
                 }
                 _d = _end;
             }
