@@ -61,8 +61,10 @@ namespace PostTradeAnalysis
         public override void Initialize()
         {
             SetTimeZone(NodaTime.DateTimeZone.Utc);
-            SetStartDate(2017, 10, 1);  //Set Start Date
-            SetEndDate(2018, 6, 1);
+            //SetStartDate(2017, 10, 1);  //Set Start Date
+            //SetEndDate(2018, 6, 1);
+            SetStartDate(2018, 11, 1);  //Set Start Date
+            SetEndDate(2019, 4, 27);
             SetCash(1);
 
             AddData<DailyFx>("DFX", Resolution.Minute, TimeZones.Utc);
@@ -167,7 +169,7 @@ namespace PostTradeAnalysis
                     var candleStartTime =Utils.ToUnixTimestamp(data[rule.Symbol].Time.ConvertToUtc(Securities[rule.Symbol].Exchange.TimeZone));
                     var candleEndTime = Utils.ToUnixTimestamp(data[rule.Symbol].EndTime.ConvertToUtc(Securities[rule.Symbol].Exchange.TimeZone));
 
-                    if ((rule.Serie.Count==0 && (rule.setupTime-l) > candleStartTime ) || (rule.Serie.Count > 0 && (rule.exitTime+ le > candleStartTime || rule.expirationTime+ le > candleStartTime)))
+                    if (candleStartTime > (rule.setupTime-l) && (candleStartTime<Math.Max(rule.exitTime, rule.expirationTime )+ le))
                     {
                         rule.Serie.Add(new LocalQuote
                         {
