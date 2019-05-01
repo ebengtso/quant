@@ -178,17 +178,18 @@ namespace AlgorithmUtils
                 Timeout = 120000,
                 BaseUrl = new Uri(string.Format(alternateChannel ? SlackURL2 : SlackURL))
             };
+            JArray arr = new JArray();
             JObject obj = new JObject();
             obj.Add("type", "image");
             obj.Add("alt_text", title);
             obj.Add("image_url", url);
-
+            arr.Add(obj);
 
             var request = new RestRequest
             {
                 Method = RestSharp.Method.POST
             };
-            request.AddParameter("application/json", obj.ToString(), ParameterType.RequestBody);
+            request.AddParameter("application/json", arr.ToString(), ParameterType.RequestBody);
             request.AddHeader("content-type", "application/json");
             client.Execute(request);
         }
