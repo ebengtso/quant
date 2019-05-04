@@ -8,7 +8,8 @@ To download volumes a few changes to the QuantConnect source code are necessary
     
     check the example file in github. The modifications needed can be found by searching forexvolumedata and cfdvolumedata
     
-In the algo, add this:        
+In the algo, add this:
+
     Market.Add("forexvolumedata", 998);
     Market.Add("cfdvolumedata", 999);
     
@@ -44,10 +45,13 @@ In the algo, add this:
             return security;
         }
 
-- add the Symbols using the following
-  AddData<CfdOandaVolume>(string.Format("OANDA/{0}", symbol), Resolution.Minute, "cfdvolumedata",false);
-  AddData<ForexOandaVolume>(string.Format("OANDA/{0}", symbol), Resolution.Minute, "forexvolumedata",false);
-  
+- add the Symbols using the following:
+
+    // add this code for each cfd symbol
+    AddData<CfdOandaVolume>(string.Format("OANDA/{0}", symbol), Resolution.Minute, "cfdvolumedata",false);
+    // add this code for each forex symbol
+    AddData<ForexOandaVolume>(string.Format("OANDA/{0}", symbol), Resolution.Minute, "forexvolumedata",false);
+
 - In QuantConnect.Engine TextSubscriptionDataSourceReader.Read add the check on instance==null
 
 ...
