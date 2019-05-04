@@ -21,6 +21,9 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="test.settings">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="nunit.framework">
@@ -36,11 +39,6 @@
   <ItemGroup>
     <Compile Include="UtilsTests.cs" />
     <Compile Include="TestConfiguration.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="test.settings">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

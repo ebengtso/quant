@@ -12,7 +12,7 @@ namespace AlgorithmUtils.Tests
         static TestConfiguration()
         {
             foreach (var row in File.ReadAllLines("test.settings"))
-                Parameters.Add(row.Split('=')[0], string.Join("=", row.Split('=').Skip(1).ToArray()));
+                Parameters.Add(row.Split('=')[0], row.Split('=')[1]);
         }
 
     }
