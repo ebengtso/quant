@@ -1,8 +1,11 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Mail;
 using System.Text;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using QuantConnect.Algorithm;
@@ -149,7 +152,7 @@ namespace AlgorithmUtils
         }
 
 
-        public static void SendSlack(string AlgorithmId, string title, string body, bool alternateChannel = false)
+        public static bool SendSlack(string AlgorithmId, string title, string body, bool alternateChannel = false)
         {
 
             RestClient client = new RestClient
@@ -165,14 +168,14 @@ namespace AlgorithmUtils
             {
                 Method = RestSharp.Method.POST
             };
-            request.AddParameter("application/json", obj.ToString(), ParameterType.RequestBody);
-            request.AddHeader("content-type", "application/json");
-            client.Execute(request);
+            request.AddParameter("application/json", obj.ToString(Formatting.None), ParameterType.RequestBody);
+            request.AddHeader("Content-Type", "application/json");
+            var response = client.Execute(request);
+            return response.StatusCode == HttpStatusCode.OK;
         }
 
-        public static void SendSlackImage(string AlgorithmId, string title, string url, bool alternateChannel = false)
+        public static bool SendSlackImage(string AlgorithmId, string title, string url, bool alternateChannel = false)
         {
-
             RestClient client = new RestClient
             {
                 Timeout = 120000,
@@ -183,15 +186,22 @@ namespace AlgorithmUtils
             obj.Add("type", "image");
             obj.Add("alt_text", title);
             obj.Add("image_url", url);
+            JObject titleobj = new JObject();
+            titleobj.Add("text", title);
+            titleobj.Add("blocks", arr);
             arr.Add(obj);
+
 
             var request = new RestRequest
             {
                 Method = RestSharp.Method.POST
+                
             };
-            request.AddParameter("application/json", arr.ToString(), ParameterType.RequestBody);
-            request.AddHeader("content-type", "application/json");
-            client.Execute(request);
+            request.Parameters.Clear();
+            request.AddParameter("application/json", titleobj.ToString(Formatting.None), ParameterType.RequestBody);
+            var response = client.Execute(request);
+            return response.StatusCode == HttpStatusCode.OK;
+
         }
     }
 
