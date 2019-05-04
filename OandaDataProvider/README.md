@@ -51,6 +51,7 @@ In the algo, add this:
 - In QuantConnect.Engine TextSubscriptionDataSourceReader.Read add the check on instance==null
 
 ...
+
                     // while the reader has data
                     while (!reader.EndOfStream)
                     {
@@ -75,6 +76,8 @@ In the algo, add this:
 ...                      
 
 - in the algo add:
+
+        //OnData
         public void OnData(OandaVolume data)
         {
             Log("volume " + data.Symbol+ " "+data.Volume + " "+data.Time);
