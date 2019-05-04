@@ -31,8 +31,10 @@ namespace QuantConnect.Lean.Engine.DataFeeds
     {
         private string __url = "https://api-fxtrade.oanda.com/v3/instruments/{0}/candles?price={1}&from={2}&to={3}&granularity={4}";
         private string _url = "https://api-fxtrade.oanda.com/v3/instruments/{0}/candles?price={1}&from={2}&count=5000&granularity={3}";
+        private string liveurl = "https://api-fxtrade.oanda.com/v3/instruments/{0}/candles?price={1}&count=1&granularity={3}";
         private string ___url = "https://api-fxtrade.oanda.com/v3/instruments/{0}/candles?price={1}&from={2}&to={3}&granularity={4}";
         private string _price = "BA";
+        private DateTime _previousDate = DateTime.MinValue;
 
         /// <summary>
         ///     Sum of opening and closing Volume for the entire time interval.
@@ -66,6 +68,7 @@ namespace QuantConnect.Lean.Engine.DataFeeds
         /// <exception cref="System.NotImplementedException">FOREX Volume data is not available in live mode, yet.</exception>
         public override SubscriptionDataSource GetSource(SubscriptionDataConfig config, DateTime date, bool isLiveMode)
         {
+            var utcDate = date.ConvertToUtc(config.ExchangeTimeZone);
             string r = "S5";
             string filename = "";
             string id = config.Symbol.ID.Symbol.Split('/')[1];
@@ -73,15 +76,15 @@ namespace QuantConnect.Lean.Engine.DataFeeds
             {
                 case Resolution.Minute:
                     r = "M1";
-                    filename = string.Format("{0}{1:D2}{2:D2}_{3}_minute_quote.csv", new object[] { date.Year, date.Month, date.Day, id });
+                    filename = string.Format("{0}{1:D2}{2:D2}_{3}_minute_quote.csv", new object[] { utcDate.Year, utcDate.Month, utcDate.Day, id });
                     break;
                 case Resolution.Second:
                     r = "S5";
-                    filename = string.Format("{0}{1:D2}{2:D2}_{3}_second_quote.csv", new object[] { date.Year, date.Month, date.Day, id });
+                    filename = string.Format("{0}{1:D2}{2:D2}_{3}_second_quote.csv", new object[] { utcDate.Year, utcDate.Month, utcDate.Day, id });
                     break;
                 case Resolution.Tick:
                     r = "S5";
-                    filename = string.Format("{0}{1:D2}{2:D2}_{3}_tick_quote.csv", new object[] { date.Year, date.Month, date.Day, id });
+                    filename = string.Format("{0}{1:D2}{2:D2}_{3}_tick_quote.csv", new object[] { utcDate.Year, utcDate.Month, utcDate.Day, id });
                     break;
                 case Resolution.Hour:
                     r = "H1";
@@ -94,18 +97,19 @@ namespace QuantConnect.Lean.Engine.DataFeeds
             }
 
             string s = id.Insert(id.Length - 3, "_");
-            DateTime todate = date.ToUniversalTime().AddDays(1d);
+            DateTime todate = utcDate.AddDays(1d);
             if (todate > DateTime.UtcNow)
             {
                 todate = DateTime.UtcNow;
             }
             //string urlold = string.Format(__url, s, _price, ToUnixTimestamp(date.ToUniversalTime()), ToUnixTimestamp(todate), r);
-            string url = string.Format(_url, s, _price, ToUnixTimestamp(date.ToUniversalTime()), r);
+            string url = string.Format(isLiveMode?liveurl:_url, s, _price, ToUnixTimestamp(utcDate), r);
 
             var auth = "Bearer " + _token;
             List<KeyValuePair<string, string>> header = new List<KeyValuePair<string, string>>();
             header.Add(new KeyValuePair<string, string>("content-type", "application/json"));
             header.Add(new KeyValuePair<string, string>("Authorization", auth));
+
             if (isLiveMode)
             {
                 var source = url;
@@ -113,7 +117,7 @@ namespace QuantConnect.Lean.Engine.DataFeeds
             }
             else
             {
-                var source = GenerateZipFilePath(config, date);
+                var source = GenerateZipFilePath(config, utcDate);
                 return new SubscriptionDataSource(source, SubscriptionTransportMedium.LocalFile);
             }
         }
@@ -135,6 +139,7 @@ namespace QuantConnect.Lean.Engine.DataFeeds
         public override BaseData Reader(SubscriptionDataConfig config, string line, DateTime date, bool isLiveMode)
         {
             var brokerVolume = CreateData(config);
+
             if (isLiveMode)
             {
                 try
@@ -145,6 +150,17 @@ namespace QuantConnect.Lean.Engine.DataFeeds
                         brokerVolume.Time = candle.Time.ConvertFromUtc(config.ExchangeTimeZone);
                         brokerVolume.Volume = candle.Volume;
                     }
+
+                    if(brokerVolume.Time == _previousDate)
+                    {
+                        return null;
+                    }
+                   
+                    if (ins.Candles.Length==0)
+                    {
+                        return null;
+                    }
+                    _previousDate = brokerVolume.Time;
                 }
                 catch (Exception exception)
                 {
