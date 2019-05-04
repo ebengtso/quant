@@ -53,6 +53,7 @@
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="README.md" />
+    <None Include="market-hours-database.json" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\erikbengtson\Lean\Api\QuantConnect.Api.csproj">
