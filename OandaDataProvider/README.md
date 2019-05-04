@@ -47,10 +47,11 @@ In the algo, add this:
 
 - add the Symbols using the following:
 
-    // add this code for each cfd symbol
-    AddData<CfdOandaVolume>(string.Format("OANDA/{0}", symbol), Resolution.Minute, "cfdvolumedata",false);
-    // add this code for each forex symbol
-    AddData<ForexOandaVolume>(string.Format("OANDA/{0}", symbol), Resolution.Minute, "forexvolumedata",false);
+
+        // add this code for each cfd symbol
+        AddData<CfdOandaVolume>(string.Format("OANDA/{0}", symbol), Resolution.Minute, "cfdvolumedata",false);
+        // add this code for each forex symbol
+        AddData<ForexOandaVolume>(string.Format("OANDA/{0}", symbol), Resolution.Minute, "forexvolumedata",false);
 
 - In QuantConnect.Engine TextSubscriptionDataSourceReader.Read add the check on instance==null
 
