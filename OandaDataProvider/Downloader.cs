@@ -24,32 +24,34 @@ namespace QuantConnect.Lean.Engine.DataFeeds
         }
         public bool DownloadData(Symbol symbol, Resolution resolution, DateTime date)
         {
-            if (resolution == Resolution.Hour)
+            var simpleDate= date.Date;
+             if (resolution == Resolution.Hour)
             {
-                return DownloadHourData(symbol, resolution, date);
+                return DownloadHourData(symbol, resolution, simpleDate);
             }
+
             string r = "S5";
             string filename = "";
             string s = symbol.ID.Symbol.Insert(symbol.ID.Symbol.Length - 3, "_");
-            DateTime todate = date.ToUniversalTime().AddDays(1d);
+            DateTime todate = simpleDate.AddDays(1d).Date;
             string url = null;
             switch (resolution)
             {
                 case Resolution.Minute:
                     r = "M1";
-                    filename = string.Format("{0}{1:D2}{2:D2}_{3}_minute_quote.csv", new object[] { date.Year, date.Month, date.Day, symbol.ID.Symbol });
-                    url = string.Format(_url, s, _price, ToUnixTimestamp(date.ToUniversalTime()), ToUnixTimestamp(todate), r);
+                    filename = string.Format("{0}{1:D2}{2:D2}_{3}_minute_quote.csv", new object[] { simpleDate.Year, simpleDate.Month, simpleDate.Day, symbol.ID.Symbol });
+                    url = string.Format(_url, s, _price, ToUnixTimestamp(simpleDate), ToUnixTimestamp(todate), r);
 
                     break;
                 case Resolution.Second:
                     r = "S5";
-                    filename = string.Format("{0}{1:D2}{2:D2}_{3}_second_quote.csv", new object[] { date.Year, date.Month, date.Day, symbol.ID.Symbol });
-                    url = string.Format(_url, s, _price, ToUnixTimestamp(date.ToUniversalTime()), ToUnixTimestamp(todate), r);
+                    filename = string.Format("{0}{1:D2}{2:D2}_{3}_second_quote.csv", new object[] { simpleDate.Year, simpleDate.Month, simpleDate.Day, symbol.ID.Symbol });
+                    url = string.Format(_url, s, _price, ToUnixTimestamp(simpleDate), ToUnixTimestamp(todate), r);
                     break;
                 case Resolution.Tick:
                     r = "S5";
-                    filename = string.Format("{0}{1:D2}{2:D2}_{3}_tick_quote.csv", new object[] { date.Year, date.Month, date.Day, symbol.ID.Symbol });
-                    url = string.Format(_url, s, _price, ToUnixTimestamp(date.ToUniversalTime()), ToUnixTimestamp(todate), r);
+                    filename = string.Format("{0}{1:D2}{2:D2}_{3}_tick_quote.csv", new object[] { simpleDate.Year, simpleDate.Month, simpleDate.Day, symbol.ID.Symbol });
+                    url = string.Format(_url, s, _price, ToUnixTimestamp(simpleDate), ToUnixTimestamp(todate), r);
                     break;
                 case Resolution.Hour:
                     {
@@ -84,11 +86,11 @@ namespace QuantConnect.Lean.Engine.DataFeeds
             if (response.ErrorException == null)
             {
                 // Save csv in same folder heirarchy as Lean
-                var path = Path.Combine(_dataPath, LeanData.GenerateRelativeZipFilePath(symbol.Value, symbol.ID.SecurityType, symbol.ID.Market, date, resolution));
+                var path = Path.Combine(_dataPath, LeanData.GenerateRelativeZipFilePath(symbol.Value, symbol.ID.SecurityType, symbol.ID.Market, simpleDate, resolution));
 
                 // Make sure the directory exist before writing
                 (new FileInfo(path)).Directory.Create();
-                var csv = resolution == Resolution.Daily || resolution == Resolution.Hour ? JSonToCSV(json) : JSonToCSV(date, json);
+                var csv = resolution == Resolution.Daily || resolution == Resolution.Hour ? JSonToCSV(json) : JSonToCSV(simpleDate, json);
                 if (csv == null || csv.Length < 1)
                 {
                     return false;
@@ -105,7 +107,7 @@ namespace QuantConnect.Lean.Engine.DataFeeds
             string r = "S5";
             string filename = "";
             string s = symbol.ID.Symbol.Insert(symbol.ID.Symbol.Length - 3, "_");
-            DateTime todate = date.ToUniversalTime().AddDays(1d);
+            DateTime todate = date.AddDays(1d);
             string url = null;
             r = "H1";
             filename = string.Format("{0}.csv", symbol.ID.Symbol);

@@ -36,20 +36,26 @@ namespace QuantConnect.Lean.Engine.DataFeeds
 		/// <returns>A <see cref="Stream"/> of the data requested</returns>
 		public Stream Fetch( string key )
 		{
-			if ( File.Exists( key ) ) {
-				return new FileStream( key, FileMode.Open, FileAccess.Read );
+			if ( File.Exists( key ) )
+            {
+                if (new FileInfo(key).Length > 50)
+                {
+                    return new FileStream(key, FileMode.Open, FileAccess.Read);
+                }
 			}
 
-			// If the file cannot be found on disc, attempt to retrieve it from the API
-			Symbol symbol;
+            
+
+            // If the file cannot be found on disc, attempt to retrieve it from the API
+            Symbol symbol;
 			DateTime date;
 			Resolution resolution;
 
 			if ( LeanDataFix.TryParsePath( key, out symbol, out date, out resolution ) ) {
-				Log.Trace( "OandaDataProvider.Fetch(): Attempting to get data from Oanda.com's data library for symbol({0}), resolution({1}) and date({2}).",
+				Log.Trace("OandaDataProvider.Fetch(): Attempting to get data from Oanda.com's data library for symbol({0}), resolution({1}) and date({2}).",
 					symbol.Value,
 					resolution,
-					date.Date.ToShortDateString() );
+					date.Date.ToShortDateString());
 
 				var downloadSuccessful = _api.DownloadData( symbol, resolution, date );
 
@@ -59,8 +65,11 @@ namespace QuantConnect.Lean.Engine.DataFeeds
 						resolution,
 						date.Date.ToShortDateString() );
 
-					return new FileStream( key, FileMode.Open, FileAccess.Read );
-				}
+                        if (new FileInfo(key).Length > 50)
+                        {
+                            return new FileStream(key, FileMode.Open, FileAccess.Read);
+                        }
+                    }
 			}
 
 			Log.Error( "OandaDataProvider.Fetch(): Unable to remotely retrieve data for path {0}. " +

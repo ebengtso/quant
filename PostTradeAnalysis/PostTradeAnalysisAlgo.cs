@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using AlgorithmUtils;
 using Newtonsoft.Json.Linq;
 using QuantConnect;
@@ -28,7 +29,9 @@ namespace PostTradeAnalysis
         public decimal support2Price { get; set; }
         public decimal resistancePrice { get; set; }
         public decimal resistance2Price { get; set; }
-       // public LocalQuote[] Serie { get { return _Serie.ToArray(); } }
+        public decimal predictedPriceLow { get; set; }
+        public decimal predictedPriceHigh { get; set; }
+        // public LocalQuote[] Serie { get { return _Serie.ToArray(); } }
         public List<LocalQuote> Serie { get; } = new List<LocalQuote>();
        // public CalendarEvent[] Events { get { return _Events.ToArray(); } }
         public List<CalendarEvent> Events { get; } = new List<CalendarEvent>();
@@ -64,17 +67,17 @@ namespace PostTradeAnalysis
             //SetStartDate(2017, 10, 1);  //Set Start Date
             //SetEndDate(2018, 6, 1);
             SetStartDate(2018, 11, 1);  //Set Start Date
-            SetEndDate(2019, 4, 27);
+            SetEndDate(2019, 5, 10);
             SetCash(1);
 
             AddData<DailyFx>("DFX", Resolution.Minute, TimeZones.Utc);
 
-            foreach (var symbol in Configuration.forexsymbols)
+            foreach (var symbol in TradingSymbols.OandaFXSymbols)
             {
                 AddSecurity(SecurityType.Forex, symbol, Resolution.Hour, Market.Oanda, false, 1, false);
             }
 
-            foreach (var symbol in Configuration.cfdsymbols)
+            foreach (var symbol in TradingSymbols.OandaCFDAll)
             {
                 AddSecurity(SecurityType.Cfd, symbol, Resolution.Hour, Market.Oanda,false,1,false);
             }
@@ -89,6 +92,8 @@ namespace PostTradeAnalysis
                 Utils.WriteToFile(GetParameter("directory"),string.Format("json-{0}-trade.json", rule.ID), JObject.FromObject(rule).ToString(), false);
 
             }
+            ;
+            Utils.WriteToFile(GetParameter("directory"), "list.json", JArray.FromObject(Directory.EnumerateFiles(GetParameter("directory"),"*.json").Select(Path.GetFileName)).ToString(), false);
         }
 
         public List<TradeSummaryLocal> loadCsvFile(string directory, string fileName)
@@ -121,7 +126,9 @@ namespace PostTradeAnalysis
                     supportPrice = Convert.ToDecimal(str[19], CultureInfo.InvariantCulture),
                     support2Price = Convert.ToDecimal(str[20], CultureInfo.InvariantCulture),
                     resistancePrice = Convert.ToDecimal(str[21], CultureInfo.InvariantCulture),
-                    resistance2Price = Convert.ToDecimal(str[22], CultureInfo.InvariantCulture)
+                    resistance2Price = Convert.ToDecimal(str[22], CultureInfo.InvariantCulture),
+                    predictedPriceLow = Convert.ToDecimal(str[37], CultureInfo.InvariantCulture),
+                    predictedPriceHigh = Convert.ToDecimal(str[38], CultureInfo.InvariantCulture)
                 });
             }
 
