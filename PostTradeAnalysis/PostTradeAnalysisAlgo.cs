@@ -67,7 +67,7 @@ namespace PostTradeAnalysis
             //SetStartDate(2017, 10, 1);  //Set Start Date
             //SetEndDate(2018, 6, 1);
             SetStartDate(2018, 11, 1);  //Set Start Date
-            SetEndDate(2019, 5, 10);
+            SetEndDate(2019, 5, 18);
             SetCash(1);
 
             AddData<DailyFx>("DFX", Resolution.Minute, TimeZones.Utc);
